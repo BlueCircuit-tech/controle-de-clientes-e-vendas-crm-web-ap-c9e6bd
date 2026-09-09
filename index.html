@@ -696,6 +696,207 @@
         <li><button onclick="meu_diagnostico_abrir_historico('14/10/2024')" class="w-full text-left flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 active:scale-[0.99] transition">
           <span class="shrink-0 w-10 h-10 rounded-full bg-marca-100 text-marca-800 font-bold grid place
 
+    <section data-tela="catalogo-de-servicos" class="hidden animate-fadein">
+  <div class="max-w-[430px] mx-auto px-4 pb-4">
+    <!-- Cabeçalho -->
+    <div class="pt-2 pb-4">
+      <h1 class="text-2xl font-display font-semibold text-marca-900">Catálogo de Serviços</h1>
+      <p class="text-marca-700 font-body text-base mt-1">Produtos financeiros sob medida para você.</p>
+    </div>
+    <!-- Filtros e busca -->
+    <form class="mb-2 flex flex-col gap-2" onsubmit="return false;">
+      <div class="flex gap-2">
+        <label class="relative flex-1">
+          <span class="sr-only">Buscar serviço</span>
+          <input type="text" id="catalogo_de_servicos_busca" placeholder="Buscar serviço..." autocomplete="off"
+            class="w-full rounded-lg border border-marca-200 bg-white px-3 py-2 pl-10 font-body text-marca-900 placeholder-marca-400 focus:border-marca-500 focus:ring-1 focus:ring-marca-200 transition"
+            oninput="catalogo_de_servicos_filtrar()"
+          >
+          <span class="absolute left-2.5 top-2.5 text-marca-400 pointer-events-none">
+            <svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M13.409 13.409L18 18"/><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+        </label>
+        <button type="button" tabindex="-1" onclick="catalogo_de_servicos_limparFiltro()" class="px-2 text-sm font-body text-marca-500 hover:text-marca-700 focus-visible:ring-2 rounded transition">
+          Limpar
+        </button>
+      </div>
+      <div class="flex gap-2">
+        <label class="flex-1">
+          <span class="block text-xs font-body font-medium text-marca-500 pl-1 pb-0.5">Valor mínimo</span>
+          <select id="catalogo_de_servicos_valor" class="w-full rounded-lg border border-marca-200 bg-white px-3 py-2 font-body text-marca-900 focus:border-marca-500 focus:ring-1 focus:ring-marca-200 transition" onchange="catalogo_de_servicos_filtrar()">
+            <option value="">Todos</option>
+            <option value="500">A partir de R$ 500</option>
+            <option value="1000">A partir de R$ 1.000</option>
+            <option value="2000">A partir de R$ 2.000</option>
+          </select>
+        </label>
+        <label class="flex-1">
+          <span class="block text-xs font-body font-medium text-marca-500 pl-1 pb-0.5">Prazo</span>
+          <select id="catalogo_de_servicos_prazo" class="w-full rounded-lg border border-marca-200 bg-white px-3 py-2 font-body text-marca-900 focus:border-marca-500 focus:ring-1 focus:ring-marca-200 transition" onchange="catalogo_de_servicos_filtrar()">
+            <option value="">Todos</option>
+            <option value="12">até 12 meses</option>
+            <option value="24">até 24 meses</option>
+            <option value="36">até 36 meses</option>
+          </select>
+        </label>
+      </div>
+    </form>
+    <div id="catalogo_de_servicos_lista" class="flex flex-col gap-3 pt-1"></div>
+    <!-- Estado vazio -->
+    <div id="catalogo_de_servicos_vazio" class="hidden flex flex-col items-center justify-center py-16">
+      <svg width="52" height="52" fill="none" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="url(#EmptyCard)" fill-opacity="0.12"/><defs><linearGradient id="EmptyCard" x1="0" y1="0" x2="52" y2="52" gradientUnits="userSpaceOnUse"><stop stop-color="#5B72E1"/><stop offset="1" stop-color="#8FC8E4"/></linearGradient></defs><path d="M16.5 33.5h19M17 24c.333-6.333 17.667-6.333 18 0v6c0 2.667-1.667 4-5 4h-8c-3.333 0-5-1.333-5-4v-6Zm9 1.5v3.5" stroke="#95A3C0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p class="mt-4 text-marca-500 font-body text-base text-center leading-snug">Nenhum serviço encontrado.<br>Tente outros filtros ou palavras.</p>
+    </div>
+  </div>
+  <script>
+const catalogo_de_servicos_items = [
+  {
+    id: 'credito-pessoal',
+    nome: 'Crédito Pessoal',
+    valorMin: 500,
+    prazo: 24,
+    icone: `<svg class="w-8 h-8 rounded-full bg-marca-100 p-1" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="url(#CredPessoal)"/><defs><linearGradient id="CredPessoal" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#5781E5"/><stop offset="1" stop-color="#87B5F8"/></linearGradient></defs><rect x="10" y="13" width="12" height="7" rx="2" fill="#fff"/><rect x="12" y="14" width="8" height="1.5" rx=".75" fill="#BDC8EA"/><rect x="12" y="17" width="3" height="1.2" rx=".6" fill="#87B5F8"/><rect x="17" y="17" width="3" height="1.2" rx=".6" fill="#87B5F8"/></svg>`,
+    descricao: "Dinheiro rápido e sem burocracia para organizar suas finanças.",
+    parcelaExemplo: 58.30,
+    parcelaQtd: 24,
+    taxa: "2,9% a.m.",
+    destaque: true
+  },
+  {
+    id: 'refinanciamento',
+    nome: 'Refinanciamento',
+    valorMin: 1500,
+    prazo: 36,
+    icone: `<svg class="w-8 h-8 rounded-full bg-marca-100 p-1" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="url(#Refin)" /><defs><linearGradient id="Refin" x1="32" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#5BC6C6"/><stop offset="1" stop-color="#42A7B1"/></linearGradient></defs><path d="M11 21v-7a5 5 0 1 1 10 0v7" stroke="#fff" stroke-width="2"/><rect x="13" y="17" width="6" height="3" rx="1.5" fill="#5BC6C6"/></svg>`,
+    descricao: "Troque dívidas caras por uma parcela menor e prazos maiores.",
+    parcelaExemplo: 102.50,
+    parcelaQtd: 36,
+    taxa: "1,95% a.m.",
+    destaque: false
+  },
+  {
+    id: 'cartao-sem-anuidade',
+    nome: 'Cartão sem anuidade',
+    valorMin: 0,
+    prazo: 0,
+    icone: `<svg class="w-8 h-8 rounded-full bg-marca-100 p-1" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="url(#Cartao)" /><defs><linearGradient id="Cartao" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#FDCB42"/><stop offset="1" stop-color="#FEA849"/></linearGradient></defs><rect x="10" y="14" width="12" height="6" rx="2" fill="#fff"/><rect x="12" y="16" width="4" height="1" rx=".5" fill="#FDCB42"/><rect x="12" y="17.5" width="8" height=".7" rx=".35" fill="#FFD778"/></svg>`,
+    descricao: "Uso nacional, sem anuidade e com limite que evolui junto do cliente.",
+    parcelaExemplo: null,
+    parcelaQtd: null,
+    taxa: "0% a.m.",
+    destaque: false
+  },
+  {
+    id: 'antecipacao-recebiveis',
+    nome: 'Antecipação de recebíveis',
+    valorMin: 1000,
+    prazo: 6,
+    icone: `<svg class="w-8 h-8 rounded-full bg-marca-100 p-1" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="url(#Antecipacao)" /><defs><linearGradient id="Antecipacao" x1="16" y1="0" x2="16" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#D157E2"/><stop offset="1" stop-color="#6E86E4"/></linearGradient></defs><rect x="10" y="15" width="12" height="5" rx="2" fill="#fff"/><rect x="14" y="16.5" width="4" height="1" rx=".5" fill="#D157E2"/></svg>`,
+    descricao: "Transforme vendas a prazo em dinheiro na conta em minutos.",
+    parcelaExemplo: 1670.00,
+    parcelaQtd: 1,
+    taxa: "1,2% a.m.",
+    destaque: false
+  },
+  {
+    id: 'credito-consignado',
+    nome: 'Crédito Consignado',
+    valorMin: 1200,
+    prazo: 48,
+    icone: `<svg class="w-8 h-8 rounded-full bg-marca-100 p-1" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="url(#Consignado)"/><defs><linearGradient id="Consignado" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#44A449"/><stop offset="1" stop-color="#31B474"/></linearGradient></defs><rect x="11" y="13" width="10" height="8" rx="2" fill="#fff"/><rect x="13" y="16" width="6" height="1.2" rx=".6" fill="#A6FFA9"/><rect x="13" y="18" width="3" height="1" rx=".5" fill="#44A449"/></svg>`,
+    descricao: "Crédito com taxas ainda menores para servidores e aposentados.",
+    parcelaExemplo: 45.10,
+    parcelaQtd: 48,
+    taxa: "1,23% a.m.",
+    destaque: false
+  },
+  {
+    id: 'credito-automotivo',
+    nome: 'Crédito Automotivo',
+    valorMin: 2000,
+    prazo: 36,
+    icone: `<svg class="w-8 h-8 rounded-full bg-marca-100 p-1" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="url(#Auto)" /><defs><linearGradient id="Auto" x1="32" y1="32" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#5376DB"/><stop offset="1" stop-color="#9CBDFE"/></linearGradient></defs><rect x="11" y="14" width="10" height="6" rx="2" fill="#fff"/><rect x="12" y="17" width="8" height="1" rx=".5" fill="#5376DB"/><circle cx="13" cy="20" r="1" fill="#B5C9F8"/><circle cx="19" cy="20" r="1" fill="#B5C9F8"/></svg>`,
+    descricao: "Para comprar, trocar ou quitar seu veículo com taxas acessíveis.",
+    parcelaExemplo: 199.90,
+    parcelaQtd: 36,
+    taxa: "1,89% a.m.",
+    destaque: false
+  }
+];
+
+function catalogo_de_servicos_filtrar() {
+  const buscaTerm = document.getElementById("catalogo_de_servicos_busca").value.trim().toLowerCase();
+  const valorFiltro = parseInt(document.getElementById("catalogo_de_servicos_valor").value || "0", 10);
+  const prazoFiltro = parseInt(document.getElementById("catalogo_de_servicos_prazo").value || "0", 10);
+
+  let result = catalogo_de_servicos_items.filter(item => {
+    const correspondeNome = !buscaTerm || item.nome.toLowerCase().includes(buscaTerm);
+    const correspondeValor = !valorFiltro || item.valorMin >= valorFiltro;
+    const correspondePrazo = !prazoFiltro || (item.prazo > 0 && item.prazo <= prazoFiltro);
+    return correspondeNome && correspondeValor && correspondePrazo;
+  });
+  catalogo_de_servicos_render(result);
+}
+
+function catalogo_de_servicos_limparFiltro() {
+  document.getElementById("catalogo_de_servicos_busca").value = "";
+  document.getElementById("catalogo_de_servicos_valor").value = "";
+  document.getElementById("catalogo_de_servicos_prazo").value = "";
+  catalogo_de_servicos_filtrar();
+}
+
+function catalogo_de_servicos_render(items) {
+  const lista = document.getElementById("catalogo_de_servicos_lista");
+  const vazio = document.getElementById("catalogo_de_servicos_vazio");
+  if(!items.length) {
+    lista.innerHTML = "";
+    vazio.classList.remove('hidden');
+    return;
+  }
+  vazio.classList.add('hidden');
+  lista.innerHTML = items.map(item => `
+    <div class="card flex gap-3 items-center shadow-sm px-4 py-3 bg-white border border-marca-100 rounded-lg relative">
+      <div>${item.icone}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex gap-1.5 items-center mb-0.5">
+          <span class="font-display font-semibold text-marca-900">${item.nome}</span>
+          ${item.destaque ? '<span class="badge bg-marca-100 text-marca-700 font-body ml-1">Mais popular</span>' : ''}
+        </div>
+        <p class="text-marca-700 font-body text-sm truncate mb-1">${item.descricao}</p>
+        <div class="flex gap-2 items-center text-xs">
+          <span class="text-marca-500">Taxa <b>${item.taxa}</b></span>
+          ${item.parcelaExemplo ? `
+            <span class="text-marca-400">Ex: ${item.parcelaQtd}x&nbsp;${brl(item.parcelaExemplo)}</span>
+          ` : '<span class="text-marca-400">Sem parcelas</span>'}
+        </div>
+      </div>
+      <button class="btn bg-marca-600 hover:bg-marca-700 text-white px-3 py-2 rounded-lg shadow transition active:scale-95 text-xs ml-1"
+        onclick="catalogo_de_servicos_abrirSimulacao('${item.id}')">
+        Simular agora
+      </button>
+    </div>
+  `).join('');
+}
+
+function catalogo_de_servicos_abrirSimulacao(id) {
+  const item = catalogo_de_servicos_items.find(s => s.id === id);
+  if(!item) return;
+  const min = item.valorMin || 500, max = Math.max(min*10, 2000);
+  const prazoPadrao = item.prazo || 12;
+  abrirModal(`
+    <div class="flex flex-col gap-3 pb-2">
+      <div class="flex items-center gap-2">${item.icone}
+        <div>
+          <div class="font-display font-semibold text-marca-900 text-lg">${item.nome}</div>
+          <div class="text-xs font-body text-marca-500">${item.taxa}${item.parcelaQtd? ` | até ${item.parcelaQtd}x`:''}</div>
+        </div>
+      </div>
+      <div class="text-marca-700 font-body text-base">${item.descricao}</div>
+      <form id="formSimulacao${id}" class="flex flex-col gap-3 pt-1" onsubmit="catalogo_de_servicos_enviarSimulacao(event, '${id}');">
+        <label>
+          <span class="text-sm text-marca-700 font-body">Valor desejado <span class="text-marca-400">(mín. ${brl(min)})</span></span>
+          <input type="text" pattern
+
     <!-- TELAS -->
     </main>
     <nav class="nav-bar">
