@@ -1366,6 +1366,235 @@ function catalogo_de_servicos_abrirSimulacao(id) {
         <div class="flex flex-col gap-3 items-center text-center py-4">
           <svg width="40" height="40" class="
 
+    <section data-tela="notificacoes" class="hidden">
+    <div class="screen-enter">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h1 class="text-xl font-display font-bold text-gray-900">Notificações</h1>
+                <p id="notificacoes-subtitulo" class="text-xs text-gray-500 mt-0.5">3 não lidas</p>
+            </div>
+            <button id="notificacoes-btn-marcar-todas" class="text-xs font-semibold text-marca-600 hover:text-marca-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-marca-50 active:scale-95">
+                Marcar todas como lidas
+            </button>
+        </div>
+
+        <div class="flex gap-2 mb-5 bg-gray-100 p-1 rounded-xl">
+            <button data-filtro="todas" class="notificacoes-filtro flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all active:scale-95 bg-white text-gray-900 shadow-sm">Todas</button>
+            <button data-filtro="whatsapp" class="notificacoes-filtro flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all active:scale-95 text-gray-500 hover:text-gray-700">WhatsApp</button>
+            <button data-filtro="push" class="notificacoes-filtro flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all active:scale-95 text-gray-500 hover:text-gray-700">Push</button>
+        </div>
+
+        <div id="notificacoes-lista" class="space-y-3"></div>
+
+        <div id="notificacoes-estado-vazio" class="hidden flex flex-col items-center justify-center py-16 text-center">
+            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+            <p class="text-gray-500 font-medium text-sm">Nenhuma notificação aqui</p>
+            <p class="text-gray-400 text-xs mt-1">Volte para cá quando surgir algo novo</p>
+        </div>
+    </div>
+</section>
+
+<script>
+(function() {
+    const notificacoes = [
+        { id: 1, tipo: 'whatsapp', categoria: 'financeiro', titulo: 'Sua parcela de R$ 189 vence em 3 dias', descricao: 'A parcela de agosto no valor de R$ 189,00 vence no dia 18/08. Acesse o app para negociar ou pagar com Pix.', hora: '2025-08-15T09:12:00', lida: false, icone: 'dinheiro', cor: '#10b981', corBg: '#d1fae5' },
+        { id: 2, tipo: 'push', categoria: 'diagnostico', titulo: 'Novo diagnóstico disponível 🚀', descricao: 'Seu diagnóstico financeiro foi atualizado com base nas movimentações dos últimos 30 dias. Acesse para ver o resultado.', hora: '2025-08-15T08:45:00', lida: false, icone: 'diagnostico', cor: '#6366f1', corBg: '#e0e7ff' },
+        { id: 3, tipo: 'push', categoria: 'equipe', titulo: 'Carlos enviou uma proposta', descricao: 'Carlos Mendes, seu gerente de relacionamento, enviou uma proposta de renegociação personalizada para você.', hora: '2025-08-14T16:30:00', lida: false, icone: 'proposta', cor: '#f59e0b', corBg: '#fef3c7' },
+        { id: 4, tipo: 'whatsapp', categoria: 'sistema', titulo: 'Atualização dos termos de uso', descricao: 'Atualizamos os termos de uso e a política de privacidade da Credlivre. Leia atentamente antes de continuar usando o app.', hora: '2025-08-14T10:00:00', lida: true, icone: 'sistema', cor: '#6b7280', corBg: '#f3f4f6' },
+        { id: 5, tipo: 'push', categoria: 'financeiro', titulo: 'Pagamento confirmado ✅', descricao: 'O pagamento da parcela de R$ 189,00 foi confirmado com sucesso via Pix. Obrigado!', hora: '2025-08-13T14:22:00', lida: true, icone: 'dinheiro', cor: '#10b981', corBg: '#d1fae5' },
+        { id: 6, tipo: 'whatsapp', categoria: 'equipe', titulo: 'Lembrete de reunião', descricao: 'Amanhã às 10h você tem uma reunião de acompanhamento com Carlos Mendes. Responda "SIM" para confirmar presença.', hora: '2025-08-13T09:00:00', lida: true, icone: 'equipe', cor: '#8b5cf6', corBg: '#ede9fe' },
+        { id: 7, tipo: 'push', categoria: 'diagnostico', titulo: 'Score atualizado', descricao: 'Seu score de crédito foi atualizado para 742 pontos, uma variação de +18 pontos desde a última consulta.', hora: '2025-08-12T11:30:00', lida: true, icone: 'diagnostico', cor: '#6366f1', corBg: '#e0e7ff' },
+        { id: 8, tipo: 'push', categoria: 'proposta', titulo: 'Nova oferta de crédito disponível', descricao: 'Você foi pré-aprovado para um empréstimo de até R$ 15.000,00 com taxas a partir de 1,89% ao mês. Simule agora!', hora: '2025-08-11T15:45:00', lida: true, icone: 'proposta', cor: '#f59e0b', corBg: '#fef3c7' }
+    ];
+
+    let filtroAtual = 'todas';
+    let naoLidasCount = notificacoes.filter(n => !n.lida).length;
+
+    const ICONS = {
+        whatsapp: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`,
+        push: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`,
+        dinheiro: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+        diagnostico: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 6-6"/></svg>`,
+        proposta: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+        sistema: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+        equipe: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+    };
+
+    const CATEGORIA_LABEL = {
+        financeiro: 'Financeiro',
+        diagnostico: 'Diagnóstico',
+        proposta: 'Proposta',
+        sistema: 'Sistema',
+        equipe: 'Equipe'
+    };
+
+    function formatarDataHora(iso) {
+        const data = new Date(iso + 'Z');
+        const agora = new Date();
+        const diffMs = agora - data;
+        const diffMin = Math.floor(diffMs / 60000);
+        const diffH = Math.floor(diffMs / 3600000);
+        const diffD = Math.floor(diffMs / 86400000);
+        if (diffMin < 1) return 'Agora';
+        if (diffMin < 60) return diffMin + ' min';
+        if (diffH < 24) return diffH + 'h';
+        if (diffD < 7) return diffD + 'd';
+        return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    }
+
+    function formatarDataHoraCompleta(iso) {
+        const data = new Date(iso + 'Z');
+        return data.toLocaleDateString('pt-BR', {
+            day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function tipoLabel(tipo) {
+        return tipo === 'whatsapp' ? 'WhatsApp' : 'Push';
+    }
+
+    function tipoCor(tipo) {
+        return tipo === 'whatsapp' ? '#10b981' : '#6366f1';
+    }
+
+    function renderizarNotificacoes() {
+        const lista = document.getElementById('notificacoes-lista');
+        const estadoVazio = document.getElementById('notificacoes-estado-vazio');
+        const subtitulo = document.getElementById('notificacoes-subtitulo');
+        const naoLidas = notificacoes.filter(n => !n.lida).length;
+        subtitulo.textContent = naoLidas === 0 ? 'Todas lidas' : naoLidas + ' não lida' + (naoLidas > 1 ? 's' : '');
+
+        let filtradas = notificacoes;
+        if (filtroAtual === 'whatsapp') filtradas = notificacoes.filter(n => n.tipo === 'whatsapp');
+        if (filtroAtual === 'push') filtradas = notificacoes.filter(n => n.tipo === 'push');
+
+        filtradas.sort((a, b) => new Date(b.hora) - new Date(a.hora));
+
+        if (filtradas.length === 0) {
+            lista.innerHTML = '';
+            estadoVazio.classList.remove('hidden');
+            return;
+        }
+        estadoVazio.classList.add('hidden');
+
+        lista.innerHTML = filtradas.map(n => {
+            const iconSvg = ICONS[n.icone] || ICONS['push'];
+            const semBordaEsquerda = n.lida ? '' : 'border-l-[3px]';
+            const badgeNaoLida = n.lida ? '' : `<span class="inline-block w-2 h-2 rounded-full bg-marca-500 ml-2 flex-shrink-0"></span>`;
+            const textoDescricao = n.descricao.length > 100 ? n.descricao.substring(0, 100) + '...' : n.descricao;
+
+            return `
+            <button data-notificacao-id="${n.id}" class="notificacao-item w-full text-left card transition-all duration-200 hover:shadow-md active:scale-[0.98] ${semBordaEsquerda} ${n.lida ? 'opacity-75' : ''}" style="border-color: ${n.cor}">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mt-0.5" style="background-color: ${n.corBg}; color: ${n.cor}">
+                        ${iconSvg}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-sm font-semibold text-gray-900 leading-tight line-clamp-1">${n.titulo}</p>
+                            ${badgeNaoLida}
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">${textoDescricao}</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full" style="background-color: ${n.corBg}; color: ${n.cor}">
+                                ${tipoLabel(n.tipo)}
+                            </span>
+                            <span class="text-[10px] text-gray-400">${formatarDataHora(n.hora)}</span>
+                        </div>
+                    </div>
+                </div>
+            </button>`;
+        }).join('');
+    }
+
+    function marcarComoLida(id) {
+        const notif = notificacoes.find(n => n.id === id);
+        if (notif && !notif.lida) {
+            notif.lida = true;
+            naoLidasCount = Math.max(0, naoLidasCount - 1);
+            renderizarNotificacoes();
+            toast('Notificação marcada como lida', 'ok');
+        }
+    }
+
+    function marcarTodasComoLidas() {
+        notificacoes.forEach(n => n.lida = true);
+        naoLidasCount = 0;
+        renderizarNotificacoes();
+        toast('Todas as notificações foram marcadas como lidas', 'ok');
+    }
+
+    function abrirDetalheNotificacao(id) {
+        const n = notificacoes.find(not => not.id === id);
+        if (!n) return;
+        marcarComoLida(id);
+        const iconSvg = ICONS[n.icone] || ICONS['push'];
+        const html = `
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${n.corBg}; color: ${n.cor}">
+                        ${iconSvg.replace('w-5 h-5', 'w-6 h-6').replace('class="', 'class="')}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">${n.titulo}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background-color: ${n.corBg}; color: ${n.cor}">${tipoLabel(n.tipo)}</span>
+                            <span class="text-xs text-gray-400">${formatarDataHoraCompleta(n.hora)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-4">
+                    <p class="text-sm text-gray-700 leading-relaxed">${n.descricao}</p>
+                </div>
+                <div class="bg-marca-50 rounded-xl p-4 border border-marca-100">
+                    <p class="text-xs font-semibold text-marca-700 mb-2 uppercase tracking-wide">Categoria</p>
+                    <p class="text-sm text-gray-700">${CATEGORIA_LABEL[n.categoria] || n.categoria}</p>
+                </div>
+                <div class="flex gap-3">
+                    ${n.categoria === 'financeiro' ? `<button onclick="fecharModal(); mostrarTela('meu-perfil')" class="flex-1 btn text-sm py-2.5 active:scale-95">Ir para Perfil Financeiro</button>` : ''}
+                    ${n.categoria === 'diagnostico' ? `<button onclick="fecharModal(); mostrarTela('meu-diagnostico')" class="flex-1 btn text-sm py-2.5 active:scale-95">Ver Meu Diagnóstico</button>` : ''}
+                    ${n.categoria === 'proposta' ? `<button onclick="fecharModal(); mostrarTela('chat-e-suporte')" class="flex-1 btn text-sm py-2.5 active:scale-95">Responder Proposta</button>` : ''}
+                    ${n.categoria === 'equipe' ? `<button onclick="fecharModal(); mostrarTela('chat-e-suporte')" class="flex-1 btn text-sm py-2.5 active:scale-95">Abrir Chat</button>` : ''}
+                    ${n.categoria === 'sistema' ? `<button onclick="fecharModal(); mostrarTela('meu-perfil')" class="flex-1 btn text-sm py-2.5 active:scale-95">Ver Perfil</button>` : ''}
+                    <button onclick="fecharModal()" class="flex-1 bg-gray-100 text-gray-700 font-semibold text-sm py-2.5 rounded-xl hover:bg-gray-200 transition-colors active:scale-95">Fechar</button>
+                </div>
+            </div>
+        `;
+        abrirModal(html, 'Detalhes da Notificação');
+    }
+
+    document.getElementById('notificacoes-btn-marcar-todas').addEventListener('click', () => {
+        if (naoLidasCount === 0) {
+            toast('Todas as notificações já estão lidas', 'info');
+            return;
+        }
+        marcarTodasComoLidas();
+    });
+
+    document.querySelectorAll('.notificacoes-filtro').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.notificacoes-filtro').forEach(b => {
+                b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                b.classList.add('text-gray-500');
+            });
+            this.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+            this.classList.remove('text-gray-500');
+            filtroAtual = this.dataset.filtro;
+            renderizarNotificacoes();
+        });
+    });
+
+    document.getElementById('notificacoes-lista').addEventListener('click', function(e) {
+        const item = e.target.closest('.notificacao-item');
+        if (!item) return;
+        const id = parseInt(item.dataset.notificacaoId);
+        abrirDetalheNotificacao(id);
+    });
+
+    renderizarNotificacoes();
+})();
+</script>
+
     <!-- TELAS -->
     </main>
     <nav class="nav-bar">
